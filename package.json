@@ -1,0 +1,22 @@
+{
+  "name": "personal-project",
+  "version": "1.0.0",
+  "description": "For Buigger Project - Have each Module have its Own Package.json and Root shoud have onwn Package.json",
+  "main": "index.js",
+  "scripts": {
+    "install_server": "cd server && npm install && npm run install_dev",
+    "install_client": "cd client && npm install",
+    "install": "npm run install_server && npm run install_client",
+    "watch_server": "npm run watch --prefix server",
+    "watch_client": "npm run start --prefix client",
+    "start": " concurrently \" npm run watch_server\"  \"npm run watch_client\"",
+    "test": " concurrently \" npm test --prefix server\"  \" npm test --prefix client\"",
+    "deploy": "npm run build --prefix client && npm run start --server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^8.2.1"
+  }
+}
