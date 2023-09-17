@@ -8,18 +8,22 @@ const {
 } = require("../../Appservices/mongoConfig.js");
 
 describe("Preparing Env for testing ", () => {
-  beforeAll(async () => {
+  beforeAll( (done) => {
     console.log(
       `*************** STARTING AT THE BEGINNING OF ALL TESTES *****************`
     );
-    await connectToMongo();
+     connectToMongo().then((resolved)=>{
+      done();
+     });
   });
 
-  afterAll(async () => {
+  afterAll( (done) => {
     console.log(
       `*************** ENDING AT THE END OF ALL TESTES *****************`
     );
-    await disconnectFromMongo();
+     disconnectFromMongo().then((resolvedData)=>{
+      done();
+     });
   });
 
   //No need to Import Jest know about this packages
