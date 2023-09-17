@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checking Out the latest Source code from master
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setting Up Node JS 18 Version
-        uses: action/setup-node@v2
+        uses: action/setup-node@v3
         with:
           node-version: "18"
       - run: npm install
