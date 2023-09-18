@@ -27,7 +27,6 @@ function havitablePlanet(planet) {
  *
  */
 
-
 function delay(duration) {
   const startTime = Date.now();
   while (Date.now() - startTime < duration);
@@ -35,7 +34,7 @@ function delay(duration) {
 
 //Let this Return a Promise -- We will wait for this promise to resolve before we start the server
 async function loadPlanetDataSimple() {
-  return new Promise((resolve , reject)=>{
+  return new Promise((resolve, reject) => {
     console.log(`Starting Data fillup using Promise - loadPlanetDataSimple`);
 
     //Put whole Async Code here
@@ -51,37 +50,38 @@ async function loadPlanetDataSimple() {
     );
     readStream.on("data", async (data) => {
       if (havitablePlanet(data)) {
-          console.log(
-            `Found a havitable planet - add to List - ${data.kepler_name}`
-          );
-          let item = {
-            kepid: data.kepid,
-            kepoi_name: data.kepoi_name,
-            kepler_name: data.kepler_name,
-          };
-          await Planet.updateOne(
-            {
-              kepid: item.kepid,
-              kepoi_name: item.kepoi_name,
-              kepler_name: item.kepler_name,
-            },
-            item,
-            { upsert: true }
-          ) //This is a Promise
-            .then((resolvedData) => {
-              console.log(
-                `Data Inserted/Updated on Planet Collections : ${JSON.stringify(
-                  resolvedData
-                )}`
-              );
-            })
-            .catch((error) => {
-              console.log(`Could Not save the planet - ${error}`);
-            })
+        console.log(
+          `Found a havitable planet - add to List - ${data.kepler_name}`
+        );
+        let item = {
+          kepid: data.kepid,
+          kepoi_name: data.kepoi_name,
+          kepler_name: data.kepler_name,
+        };
+        havitablePlanetArr.push(item);
+        await Planet.updateOne(
+          {
+            kepid: item.kepid,
+            kepoi_name: item.kepoi_name,
+            kepler_name: item.kepler_name,
+          },
+          item,
+          { upsert: true }
+        ) //This is a Promise
+          .then((resolvedData) => {
+            console.log(
+              `Data Inserted/Updated on Planet Collections : ${JSON.stringify(
+                resolvedData
+              )}`
+            );
+          })
+          .catch((error) => {
+            console.log(`Could Not save the planet - ${error}`);
+          });
       }
     });
 
-    readStream.on('end' , async ()=>{
+    readStream.on("end", async () => {
       console.log(`Reading from File ended - Lets Add Earch Sky also `);
       let item = {
         kepid: 1122334455,
@@ -106,14 +106,17 @@ async function loadPlanetDataSimple() {
         })
         .catch((error) => {
           console.log(`Could Not save the planet Additionally - ${error}`);
-        })
-        delay(5000);
-        console.log(`Now I am resolving the Data FillU Promise`);
-        resolve(true);
+        });
+      delay(5000);
+      console.log(
+        `Now I am resolving the Data FillU Promise - ${JSON.stringify(
+          havitablePlanetArr
+        )}`
+      );
+      resolve(true);
     });
   });
 }
-
 
 function loadPlanetData() {
   return new Promise((resolve, reject) => {
@@ -186,7 +189,7 @@ function loadPlanetData() {
       }
     });
 
-    readStream.on('end' , ()=>{
+    readStream.on("end", () => {
       console.log(`Reading from File ended - Lets Add Earch Sky also `);
       let item = {
         kepid: 1122334455,
@@ -218,7 +221,6 @@ function loadPlanetData() {
         .finally(() => {
           console.log(`Operation completed Additionally !!`);
         });
-
     });
 
     /**
@@ -250,18 +252,17 @@ async function findAllPlanets() {
   // return  Planet.find({}); //This return Promise
   return await Planet.find({}, "-_id kepid kepoi_name kepler_name ");
 }
-//Check for change Stream 
-Planet.watch().
-  on('change', (data) => {
-    console.log(`Getting Data from Server via watching `);
-    console.log(data)});
-
+//Check for change Stream
+Planet.watch().on("change", (data) => {
+  console.log(`Getting Data from Server via watching `);
+  console.log(data);
+});
 
 //Module Export will Not wait for Stream to Finish - so it may happen that We will return an Empty Array rather than a Populated One
 
 module.exports = {
   planets: havitablePlanetArr,
   planetsPromise: loadPlanetData,
-  findAllPlanets :findAllPlanets,
+  findAllPlanets: findAllPlanets,
   loadPlanetDataSimple,
 };

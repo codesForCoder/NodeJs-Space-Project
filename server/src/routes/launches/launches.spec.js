@@ -12,6 +12,7 @@ beforeAll(async () => {
   await connectToMongo();
   await loadPlanetDataSimple(); //Can only be called from Async Function
   console.log(`TEST CASE WILL BE RUNNING ON DB - ${DB_SERVER_URL}`);
+
 });
 
 afterAll(async () => {
