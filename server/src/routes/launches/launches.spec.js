@@ -8,18 +8,18 @@ const {
 } = require("../../Appservices/mongoConfig.js");
 const { planetsPromise } = require("../../models/planets.model.js");
 
-beforeAll(async () => {
-  console.log(`TEST CASE WILL BE RUNNING ON DB - ${DB_SERVER_URL}`);
-  console.log(`Environment Variable CI = ${process.env.CI}`);
-  await connectToMongo();
- await planetsPromise(); //Can only be called from Async Function
-});
-
-afterAll(async () => {
-  await disconnectFromMongo();
-});
-
 describe("Preparing Env for testing ", () => {
+  beforeAll(async () => {
+    console.log(`TEST CASE WILL BE RUNNING ON DB - ${DB_SERVER_URL}`);
+    console.log(`Environment Variable CI = ${process.env.CI}`);
+    await connectToMongo();
+    await planetsPromise(); //Can only be called from Async Function
+  });
+
+  afterAll(async () => {
+    await disconnectFromMongo();
+  });
+
   //No need to Import Jest know about this packages
   it("Test GET /launches : It shoud respond with 200 status code", async () => {
     //Write actual test case here
