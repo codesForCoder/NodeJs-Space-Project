@@ -7,65 +7,65 @@ const axios = require("axios");
 
 const SPACEX_POST_API = "https://api.spacexdata.com/v4/launches/query";
 async function launchesPromise() {
- 
- 
   console.log(`Loading the Space X launch Historical Data Page by Page`);
   let startPage = 1;
-  const pageSize  = 50
+  const pageSize = 50;
   while (true) {
-  const response = await axios.post(SPACEX_POST_API, {
-    query: {},
-    options: {
-      page : startPage,
-        limit : pageSize,
-      populate: [
-        {
-          path: "rocket",
-          select: {
-            name: 1,
+    const response = await axios.post(SPACEX_POST_API, {
+      query: {},
+      options: {
+        page: startPage,
+        limit: pageSize,
+        populate: [
+          {
+            path: "rocket",
+            select: {
+              name: 1,
+            },
           },
-        },
-        {
-          path: "payloads",
-          select: {
-            customers: 1,
+          {
+            path: "payloads",
+            select: {
+              customers: 1,
+            },
           },
-        },
-      ],
-    },
-  });
- if(response.status === 200){
-  console.log(`Response from Space X : ===========> Page ${response.data.page}`);
-  const launchDocs = response.data.docs;
-  for (const launchDoc of launchDocs) {
-    const payloads = launchDoc.payloads;
-    const finalCustomersList = payloads.flatMap((item) => {
-      return item.customers;
+        ],
+      },
     });
-    const launch = {
-      flightNumber: launchDoc.flight_number,
-      launchDate: launchDoc.date_local,
-      mission: launchDoc.name,
-      customers: finalCustomersList, // customers come from payloads.customers for each payload
-      upcoming: launchDoc.upcoming,
-      rocket: launchDoc.rocket_name,
-      target: "Earth Sky", //No applicable Value
-      success: launchDoc.success,
-    };
-    console.log(
-      `Final Launch Obj to be daved to Mongo DB - ${JSON.stringify(launch)}`
-    );
-    saveLaunches(launch)
+    if (response.status === 200) {
+      console.log(
+        `Response from Space X : ===========> Page ${response.data.page}`
+      );
+      const launchDocs = response.data.docs;
+      for (const launchDoc of launchDocs) {
+        const payloads = launchDoc.payloads;
+        const finalCustomersList = payloads.flatMap((item) => {
+          return item.customers;
+        });
+        const launch = {
+          flightNumber: launchDoc.flight_number,
+          launchDate: launchDoc.date_local,
+          mission: launchDoc.name,
+          customers: finalCustomersList, // customers come from payloads.customers for each payload
+          upcoming: launchDoc.upcoming,
+          rocket: launchDoc.rocket_name,
+          target: "Earth Sky", //No applicable Value
+          success: launchDoc.success,
+        };
+        console.log(
+          `Final Launch Obj to be daved to Mongo DB - ${JSON.stringify(launch)}`
+        );
+        saveLaunches(launch);
+      }
+    } else {
+      console.error("Something bad happend in Api query ");
+    }
+    if (response.data.hasNextPage) {
+      startPage++;
+    } else {
+      break;
+    }
   }
-}else{
-  console.error("Something bad happend in Api query ");
-}
-  if(response.data.hasNextPage){
-    startPage++;
-  }else{
-    break;
-  }
-}
 }
 
 const launches = new Map();
@@ -130,7 +130,8 @@ async function saveLaunches(launchObj) {
     `Matched Planet from Planet DB - ${JSON.stringify(planetToMatch)}`
   );
   if (!planetToMatch) {
-    throw new Error(`Planet is Not Found - ${launchObj.target}`);
+    console.log(`Ignore this error`);
+    //throw Error(`Planet is Not Found - ${launchObj.target}`);
   } else {
     await Launch.updateOne(
       { flightNumber: launchObj.flightNumber },
@@ -140,8 +141,11 @@ async function saveLaunches(launchObj) {
   }
 }
 
-async function getAllLaunches(page , limit) {
-  return await Launch.find({}, { __v: 0, _id: 0 }).sort({flightNumber: -1}).skip(limit*(page-1)).limit(limit);
+async function getAllLaunches(page, limit) {
+  return await Launch.find({}, { __v: 0, _id: 0 })
+    .sort({ flightNumber: -1 })
+    .skip(limit * (page - 1))
+    .limit(limit);
 }
 
 async function existsLaunch(launchId) {
@@ -192,7 +196,7 @@ async function addNewLaunch(launch) {
     `Matched Planet from Planet DB - ${JSON.stringify(planetToMatch)}`
   );
   if (!planetToMatch) {
-    throw new Error(`Planet is Not Found - ${launch.target}`);
+    throw Error(`Planet is Not Found - ${launch.target}`);
   } else {
     const latestNum = await findLatestFlightNumber();
 

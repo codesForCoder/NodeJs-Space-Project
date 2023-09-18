@@ -17,6 +17,7 @@ describe("Launches API", () => {
   //************************************************ */
   afterAll(async () => {
     await disconnectFromMongo();
+    console.log(`Teardown of the Resources is Now completed `);
   });
   //************************************************ */
   //No need to Import Jest know about this packages
@@ -28,12 +29,6 @@ describe("Launches API", () => {
         .set("Origin", "http://localhost:8000"); //Setting Header
       //const response = 200;
       expect(response.status).toBe(200);
-
-      //We can do alternative way also Directly checking via supertest chain
-      // request(app)
-      //   .get("/launches")
-      //   .set("Origin", "http://localhost:8000")
-      //   .expect(200); //Setting Header
     });
   });
   //************************************************ */
@@ -69,6 +64,24 @@ describe("Launches API", () => {
       console.log(response.text);
       expect(response.text).toStrictEqual(
         '{"error":"Missing something in payload","actualRequest":{"mission":"Kepler Exploration X","rocket":"Explorer IS1","target":"Kepler-1652 b"}}'
+      );
+    });
+    //--------------------------------------------------------------
+    test("Test POST /launches : It shoud respond with 500 status code", async () => {
+      //We can do alternative way also Directly checking via supertest chain
+      const response = await request(app)
+        .post("/launches")
+        .set("Origin", "http://localhost:8000")
+        .send({
+          launchDate: "2023-09-10",
+          mission: "Kepler Exploration X",
+          rocket: "Explorer IS1",
+          target: "Kepler-1652 b Unknown",
+        })
+        .expect(500);
+      console.log(response.text);
+      expect(response.text).toStrictEqual(
+        '{"error":"Planet is Not Found - Kepler-1652 b Unknown"}'
       );
     });
     //--------------------------------------------------------------
