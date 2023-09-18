@@ -27,16 +27,11 @@ function havitablePlanet(planet) {
  *
  */
 
-function delay(duration) {
-  const startTime = Date.now();
-  while (Date.now() - startTime < duration);
-}
 
 //Let this Return a Promise -- We will wait for this promise to resolve before we start the server
 async function loadPlanetDataSimple() {
   return new Promise((resolve, reject) => {
     console.log(`Starting Data fillup using Promise - loadPlanetDataSimple`);
-
     //Put whole Async Code here
     const readStreamIntermediate = createReadStream(
       path.join(__dirname, "..", "..", "data/kepler_data.csv")
@@ -50,15 +45,11 @@ async function loadPlanetDataSimple() {
     );
     readStream.on("data", async (data) => {
       if (havitablePlanet(data)) {
-        console.log(
-          `Found a havitable planet - add to List - ${data.kepler_name}`
-        );
         let item = {
           kepid: data.kepid,
           kepoi_name: data.kepoi_name,
           kepler_name: data.kepler_name,
         };
-        havitablePlanetArr.push(item);
         await Planet.updateOne(
           {
             kepid: item.kepid,
@@ -67,22 +58,11 @@ async function loadPlanetDataSimple() {
           },
           item,
           { upsert: true }
-        ) //This is a Promise
-          .then((resolvedData) => {
-            console.log(
-              `Data Inserted/Updated on Planet Collections : ${JSON.stringify(
-                resolvedData
-              )}`
-            );
-          })
-          .catch((error) => {
-            console.log(`Could Not save the planet - ${error}`);
-          });
+        );
       }
     });
 
     readStream.on("end", async () => {
-      console.log(`Reading from File ended - Lets Add Earch Sky also `);
       let item = {
         kepid: 1122334455,
         kepoi_name: "EARTH PLANET",
@@ -96,24 +76,13 @@ async function loadPlanetDataSimple() {
         },
         item,
         { upsert: true }
-      ) //This is a Promise
-        .then((resolvedData) => {
-          console.log(
-            `Data Inserted/Updated on Planet Additionally : ${JSON.stringify(
-              resolvedData
-            )}`
-          );
-        })
-        .catch((error) => {
-          console.log(`Could Not save the planet Additionally - ${error}`);
-        });
-      delay(5000);
-      console.log(
-        `Now I am resolving the Data FillU Promise - ${JSON.stringify(
-          havitablePlanetArr
-        )}`
-      );
-      resolve(true);
+      )
+    });
+
+    readStream.on("close", async () => {
+      let data = await Planet.find({} , { __v: 0, _id: 0 } );
+      console.log(`Got Data from Planet - ${data}`);
+     resolve();
     });
   });
 }

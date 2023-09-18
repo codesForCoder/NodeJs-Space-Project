@@ -209,7 +209,7 @@ async function addNewLaunch(launch) {
         upsert: true,
       })
     ).upsertedId;
-    const result = Launch.findById({ _id: launchId }, { __v: 0, _id: 0 });
+    const result = await Launch.findById({ _id: launchId }, { __v: 0, _id: 0 });
     console.log(`Launch has been added !!! - ${result}`);
     return result;
   }
