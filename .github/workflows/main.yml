@@ -8,9 +8,11 @@ jobs:
   build:
     env:
       CI: true
+      MONGO_URL: mongodb://localhost/nasa
     strategy:
       matrix:
         node-version: [18.x]
+        mongodb-version: ['4.4']
     runs-on: ubuntu-latest
     steps:
       - name: Checking Out the latest Source code from master
@@ -19,6 +21,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Use Mongo DB ${{ matrix.mongodb-version }} for test purpose
+        uses: actions/mongodb-github-action@1.6.0 
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}   
       - run: npm install
       - run: npm run install
       - run: npm run test_server

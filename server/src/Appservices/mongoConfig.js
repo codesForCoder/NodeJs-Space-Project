@@ -28,4 +28,5 @@ async function disconnectFromMongo() {
 module.exports = {
   connectToMongo,
   disconnectFromMongo,
+  DB_SERVER_URL
 };
