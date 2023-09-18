@@ -6,16 +6,18 @@ const {
   connectToMongo,
   DB_SERVER_URL,
 } = require("../../Appservices/mongoConfig.js");
-const  {planetsPromise} = require('../../models/planets.model.js')
+const { planetsPromise } = require("../../models/planets.model.js");
 
 beforeAll(async () => {
   console.log(`TEST CASE WILL BE RUNNING ON DB - ${DB_SERVER_URL}`);
+  console.log(`Environment Variable CI = ${process.env.CI}`);
   await connectToMongo();
   let populatedInitPlanets = await planetsPromise(); //Can only be called from Async Function
   populatedInitPlanets.forEach((element) => {
     console.log(
       `Planet Loaded as Pre Init Script - ${JSON.stringify(element)}`
     );
+  });
 });
 
 afterAll(async () => {
