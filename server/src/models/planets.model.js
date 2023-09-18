@@ -27,7 +27,94 @@ function havitablePlanet(planet) {
  *
  */
 
+
+function delay(duration) {
+  const startTime = Date.now();
+  while (Date.now() - startTime < duration);
+}
+
 //Let this Return a Promise -- We will wait for this promise to resolve before we start the server
+async function loadPlanetDataSimple() {
+  return new Promise((resolve , reject)=>{
+    console.log(`Starting Data fillup using Promise - loadPlanetDataSimple`);
+
+    //Put whole Async Code here
+    const readStreamIntermediate = createReadStream(
+      path.join(__dirname, "..", "..", "data/kepler_data.csv")
+    ); //This is the Byte Data we need to read in user redabale format
+    //Send the read stream toward o writable stream
+    const readStream = readStreamIntermediate.pipe(
+      parse({
+        comment: "#",
+        columns: true,
+      })
+    );
+    readStream.on("data", async (data) => {
+      if (havitablePlanet(data)) {
+          console.log(
+            `Found a havitable planet - add to List - ${data.kepler_name}`
+          );
+          let item = {
+            kepid: data.kepid,
+            kepoi_name: data.kepoi_name,
+            kepler_name: data.kepler_name,
+          };
+          await Planet.updateOne(
+            {
+              kepid: item.kepid,
+              kepoi_name: item.kepoi_name,
+              kepler_name: item.kepler_name,
+            },
+            item,
+            { upsert: true }
+          ) //This is a Promise
+            .then((resolvedData) => {
+              console.log(
+                `Data Inserted/Updated on Planet Collections : ${JSON.stringify(
+                  resolvedData
+                )}`
+              );
+            })
+            .catch((error) => {
+              console.log(`Could Not save the planet - ${error}`);
+            })
+      }
+    });
+
+    readStream.on('end' , async ()=>{
+      console.log(`Reading from File ended - Lets Add Earch Sky also `);
+      let item = {
+        kepid: 1122334455,
+        kepoi_name: "EARTH PLANET",
+        kepler_name: "Earth Sky",
+      };
+      await Planet.updateOne(
+        {
+          kepid: item.kepid,
+          kepoi_name: item.kepoi_name,
+          kepler_name: item.kepler_name,
+        },
+        item,
+        { upsert: true }
+      ) //This is a Promise
+        .then((resolvedData) => {
+          console.log(
+            `Data Inserted/Updated on Planet Additionally : ${JSON.stringify(
+              resolvedData
+            )}`
+          );
+        })
+        .catch((error) => {
+          console.log(`Could Not save the planet Additionally - ${error}`);
+        })
+        delay(5000);
+        console.log(`Now I am resolving the Data FillU Promise`);
+        resolve(true);
+    });
+  });
+}
+
+
 function loadPlanetData() {
   return new Promise((resolve, reject) => {
     let timerTrack = new Set(); //Just to wait till all timers Finish
@@ -176,4 +263,5 @@ module.exports = {
   planets: havitablePlanetArr,
   planetsPromise: loadPlanetData,
   findAllPlanets :findAllPlanets,
+  loadPlanetDataSimple,
 };
