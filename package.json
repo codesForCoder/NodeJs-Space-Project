@@ -11,6 +11,7 @@
     "watch_client": "npm run start --prefix client",
     "start": " concurrently \" npm run watch_server\"  \"npm run watch_client\"",
     "test": " concurrently \" npm test --prefix server\"  \" npm test --prefix client\"",
+    "test_server" : "npm test --prefix server",
     "deploy": "npm run build --prefix client && npm run start --server"
   },
   "keywords": [],
